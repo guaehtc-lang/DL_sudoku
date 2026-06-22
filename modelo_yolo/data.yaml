@@ -1,0 +1,6 @@
+train: dataset_sudoku/images/train  # Carpeta de imágenes de entrenamiento
+val: dataset_sudoku/images/val      # Carpeta de imágenes de validación
+test: dataset_sudoku/images/test    # Ruta a las imágenes de prueba (opcional)
+
+nc: 1  # Número de clases (ajusta según las clases en 'clases.txt')
+names: ['sudoku'] 
