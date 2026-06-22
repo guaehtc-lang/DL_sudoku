@@ -3,6 +3,7 @@ import numpy as np
 
 
 def agrupar(posiciones, distancia=8):
+    """Agrupa líneas próximas y devuelve una posición media."""
 
     posiciones = sorted(posiciones)
     grupos = []
@@ -25,17 +26,23 @@ def agrupar(posiciones, distancia=8):
 
 
 def procesar_sudoku(imagen, modelo_yolo):
+    """Detecta el tablero, corrige la perspectiva y genera 81 celdas."""
 
     if imagen is None:
-        raise ValueError("La imagen no es válida.")
+        raise ValueError(
+            "La imagen no es válida."
+        )
 
+    # YOLO localiza el Sudoku dentro de la imagen.
     resultado = modelo_yolo(
         imagen,
         verbose=False
     )[0]
 
     if len(resultado.boxes) == 0:
-        raise ValueError("No se ha detectado ningún Sudoku.")
+        raise ValueError(
+            "No se ha detectado ningún Sudoku."
+        )
 
     indice = int(
         resultado.boxes.conf.argmax().item()
@@ -54,8 +61,11 @@ def procesar_sudoku(imagen, modelo_yolo):
     ]
 
     if tablero.size == 0:
-        raise ValueError("El recorte del tablero está vacío.")
+        raise ValueError(
+            "El recorte del tablero está vacío."
+        )
 
+    # OpenCV detecta las líneas exteriores de la cuadrícula.
     gris = cv2.cvtColor(
         tablero,
         cv2.COLOR_BGR2GRAY
@@ -86,7 +96,9 @@ def procesar_sudoku(imagen, modelo_yolo):
     )
 
     if lineas is None:
-        raise ValueError("No se ha detectado la cuadrícula.")
+        raise ValueError(
+            "No se ha detectado la cuadrícula."
+        )
 
     horizontales = []
     verticales = []
@@ -116,7 +128,9 @@ def procesar_sudoku(imagen, modelo_yolo):
     )
 
     if len(horizontales) < 2 or len(verticales) < 2:
-        raise ValueError("No se han detectado los bordes.")
+        raise ValueError(
+            "No se han detectado los bordes."
+        )
 
     origen = np.float32([
         [verticales[0], horizontales[0]],
@@ -132,6 +146,7 @@ def procesar_sudoku(imagen, modelo_yolo):
         [0, 449]
     ])
 
+    # La transformación deja el tablero recto y cuadrado.
     matriz = cv2.getPerspectiveTransform(
         origen,
         destino

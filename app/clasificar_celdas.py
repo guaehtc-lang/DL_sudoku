@@ -7,6 +7,7 @@ def preparar_celda(
     margen=5,
     area_minima=80
 ):
+    """Limpia una celda y centra su contenido en una imagen de 28 x 28."""
 
     if len(celda.shape) == 3:
 
@@ -34,6 +35,7 @@ def preparar_celda(
         + cv2.THRESH_OTSU
     )
 
+    # Los componentes conectados permiten separar el número de la cuadrícula.
     cantidad, etiquetas, estadisticas, _ = (
         cv2.connectedComponentsWithStats(
             binaria,
@@ -89,6 +91,7 @@ def preparar_celda(
             )
         )
 
+    # Sin componente válido, la celda se considera vacía.
     if len(componentes_validos) == 0:
 
         return (
@@ -159,6 +162,7 @@ def preparar_celda(
         inicio_x:inicio_x + nuevo_ancho
     ] = contenido
 
+    # Los momentos de imagen permiten centrar el número.
     momentos = cv2.moments(
         imagen
     )
@@ -198,6 +202,7 @@ def preparar_celda(
 
 
 def clasificar_celdas(celdas, modelo_class):
+    """Convierte las 81 celdas en una matriz con valores de 0 a 9."""
 
     celdas_preparadas = []
     contenido_detectado = []

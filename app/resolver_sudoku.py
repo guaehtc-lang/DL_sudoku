@@ -4,6 +4,7 @@ from tensorflow import keras
 
 
 def puzzle_parcial_valido(tablero):
+    """Comprueba que las pistas no se repitan en filas, columnas o bloques."""
 
     tablero = np.array(
         tablero,
@@ -43,6 +44,7 @@ def puzzle_parcial_valido(tablero):
 
 
 def sudoku_valido(tablero):
+    """Comprueba que el Sudoku completo contiene los números del 1 al 9."""
 
     if tablero is None:
         return False
@@ -81,7 +83,9 @@ def sudoku_valido(tablero):
 
 
 def crear_candidatos(tableros):
+    """Marca los números permitidos en cada celda vacía."""
 
+    # One-hot transforma cada número en un canal independiente.
     one_hot = keras.utils.to_categorical(
         tableros,
         num_classes=10
@@ -145,6 +149,7 @@ def crear_candidatos(tableros):
 
 
 def crear_entrada_cnn(tableros):
+    """Crea los 19 canales de entrada: 10 del tablero y 9 candidatos."""
 
     one_hot = keras.utils.to_categorical(
         tableros,
@@ -169,6 +174,7 @@ def candidatos_validos(
     fila,
     columna
 ):
+    """Devuelve los números permitidos por las reglas del Sudoku."""
 
     usados = set(
         tablero[fila, :]
@@ -201,6 +207,7 @@ def candidatos_validos(
 
 
 def seleccionar_celda_mrv(tablero):
+    """MRV elige la celda vacía con menos candidatos posibles."""
 
     mejor_celda = None
     mejores_candidatos = None
@@ -261,6 +268,7 @@ def predecir_probabilidades(
     tablero,
     modelo_juego
 ):
+    """La CNN ordena los candidatos de mayor a menor probabilidad."""
 
     entrada = crear_entrada_cnn(
         tablero.reshape(
@@ -283,6 +291,7 @@ def resolver_sudoku(
     modelo_juego,
     max_nodos=100000
 ):
+    """Resuelve el Sudoku combinando CNN, MRV y backtracking."""
 
     tablero = np.array(
         puzzle,
@@ -302,6 +311,9 @@ def resolver_sudoku(
         "retrocesos": 0
     }
 
+    # BACKTRACKING
+    # Prueba candidatos ordenados por la CNN. Si una elección no conduce
+    # a una solución, borra ese número y prueba el siguiente candidato.
     def buscar():
 
         if estadisticas["nodos"] >= max_nodos:
@@ -359,6 +371,7 @@ def resolver_sudoku(
             if buscar():
                 return True
 
+            # Retroceso: se deshace la elección incorrecta.
             tablero[
                 fila,
                 columna
