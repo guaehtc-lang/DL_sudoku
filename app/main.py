@@ -7,18 +7,19 @@ from procesar_sudoku import procesar_sudoku
 from clasificar_celdas import clasificar_celdas
 from resolver_sudoku import (
     puzzle_parcial_valido,
-    resolver_sudoku as resolver_con_backtracking,
+    resolver_sudoku,
     sudoku_valido
 )
 
 
+# Ruta de la imagen de prueba
 ruta_imagen = (
     "../modelo_yolo/img_proc/images/test/"
     "sudoku_168_jpg.rf.pfhTWZY1G9sbBr6PPDKz.jpg"
 )
 
 
-# Cargar los tres modelos
+# Cargar los modelos
 modelo_yolo = YOLO(
     "models/best.pt"
 )
@@ -44,14 +45,15 @@ if imagen is None:
     )
 
 
-# Detectar, corregir y dividir el tablero
+# YOLO detecta el tablero
+# OpenCV corrige la perspectiva y genera 81 celdas
 tablero, celdas = procesar_sudoku(
     imagen,
     modelo_yolo
 )
 
 
-# Clasificar las 81 celdas
+# La CNN clasifica las 81 celdas
 (
     puzzle,
     confianzas,
@@ -63,7 +65,7 @@ tablero, celdas = procesar_sudoku(
 )
 
 
-# Validar el puzzle reconocido
+# Comprobar que el puzzle no tiene contradicciones
 if not puzzle_parcial_valido(
     puzzle
 ):
@@ -73,18 +75,13 @@ if not puzzle_parcial_valido(
     )
 
 
-# BACKTRACKING
-# MRV selecciona la celda más restrictiva.
-# La CNN ordena los candidatos.
-# Si un candidato falla, se borra y se prueba el siguiente.
-solucion, estadisticas = (
-    resolver_con_backtracking(
-        puzzle,
-        modelo_juego,
-        max_nodos=100000
-    )
+# Resolver el Sudoku
+# En resolver_sudoku.py se ejecutan:
+# CNN + MRV + backtracking
+solucion, estadisticas = resolver_sudoku(
+    puzzle,
+    modelo_juego
 )
-
 
 if solucion is None:
 
@@ -93,11 +90,19 @@ if solucion is None:
     )
 
 
-# Validar y mostrar el resultado
+# Comprobar la solución
 valido = sudoku_valido(
     solucion
 )
 
+if not valido:
+
+    raise ValueError(
+        "La solución obtenida no es válida."
+    )
+
+
+# Mostrar resultados
 print("Puzzle reconocido:")
 print(puzzle)
 
